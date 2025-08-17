@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>תפריט ומחירון מגשי אירוח – גרסת ספר עם מודל</title>
+  <meta name="description" content="תפריט ומחירון מגשי אירוח בגרסת HTML ספר עם כרטיסים נפתחים.">
+  <style>
+:root{
+  --bg:#0b0f1a;
+  --paper:#111826;
+  --ink:#e5e7eb;
+  --muted:#9aa4b2;
+  --accent:#3ddc97;
+  --accent2:#60a5fa;
+  --radius:18px;
+  --shadow: 0 18px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; padding:24px;
+  background:
+    radial-gradient(1200px 800px at 85% -10%, rgba(96,165,250,.08), transparent),
+    radial-gradient(1000px 700px at -10% 120%, rgba(61,220,151,.07), transparent),
+    var(--bg);
+  color:var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Helvetica, Arial;
+  line-height:1.6;
+  direction: rtl;
+}
+.book{
+  max-width:1200px; margin:0 auto;
+  display:grid; gap:24px;
+  grid-template-columns: 1fr 1fr;
+}
+.page{
+  background: linear-gradient(180deg, rgba(17,24,38,.94), rgba(17,24,38,.82));
+  border:1px solid rgba(148,163,184,.18);
+  border-radius: calc(var(--radius) + 6px);
+  min-height: 620px;
+  box-shadow: var(--shadow);
+  position:relative;
+  overflow:hidden;
+}
+.page:before{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, rgba(255,255,255,.06), transparent 30%, transparent 70%, rgba(255,255,255,.04));
+  pointer-events:none;
+}
+.page-inner{
+  padding:28px;
+}
+.brand{
+  font-weight:800; letter-spacing:.1em; color:var(--muted);
+  opacity:.9;
+}
+.brand.small{font-size:12px}
+.title{
+  font-size: clamp(28px, 5vw, 48px);
+  line-height:1.1; margin:18px 0 10px;
+  text-shadow: 0 6px 18px rgba(0,0,0,.4);
+}
+.subtitle{color:var(--muted); font-size:18px; margin:0}
+.divider{
+  height:3px; width:120px; border-radius:4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  margin:14px 0 16px;
+}
+.section-header h2{
+  margin:0 0 12px;
+  font-size: clamp(22px, 3.2vw, 30px);
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow: 0 8px 22px rgba(61,220,151,.15);
+}
+.grid{
+  display:grid; gap:14px;
+  grid-template-columns: 1fr 1fr;
+}
+.card{
+  background: rgba(255,255,255,.02);
+  border:1px solid rgba(148,163,184,.16);
+  border-radius: var(--radius);
+  padding:16px;
+  min-height:100px;
+}
+.card:hover{border-color: rgba(148,163,184,.28); background: rgba(255,255,255,.04)}
+.item{margin:0 0 6px; font-size:18px}
+.desc{margin:0; color:var(--muted); font-size:14px}
+.price{
+  margin-top:10px; font-weight:800;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  font-size:18px;
+}
+/* Book look: put subtle spine between the two columns */
+.book{ position:relative }
+.book:after{
+  content:"";
+  position:fixed; top:0; bottom:0; left:50%; width:2px;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02), rgba(255,255,255,.08));
+  transform: translateX(-1px);
+  pointer-events:none;
+}
+/* Print: each .page becomes A4 portrait */
+@page { size: A4; margin: 12mm; }
+@media print {
+  body{ background:white }
+  .book{
+    display:block; max-width:none;
+  }
+  .page{
+    break-inside: avoid; page-break-inside: avoid;
+    box-shadow:none; border: none; background: white; color: #111;
+  }
+  .page:before, .book:after{ display:none }
+  .card{ border-color:#ddd; background:#fafafa }
+  .price{ color:#0b6; background:none; -webkit-background-clip:initial }
+}
+/* Responsive: single column pages on small screens */
+@media (max-width: 1024px){
+  .book{ grid-template-columns: 1fr }
+}
+
+.modal{
+  position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%;
+  background-color: rgba(0,0,0,0.5);
+  display:flex; align-items:center; justify-content:center;
+}
+.modal-content{
+  background: var(--paper);
+  padding: 20px;
+  border-radius: var(--radius);
+  max-width: 500px; width:90%;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.close{
+  position:absolute; top:10px; right:20px;
+  font-size:28px; font-weight:bold; cursor:pointer;
+}
+</style>
+</head>
+<body>
+  <main class="book">
+    
+<section class="page cover">
+  <div class="page-inner">
+    <div class="brand">בס״ד</div>
+    <h1 class="title">תפריט ומחירון מגשי אירוח</h1>
+    <div class="divider"></div>
+    <p class="subtitle">מבחר סלטים, מגשי אירוח קרים וחמים, וקינוחים</p>
+  </div>
+</section>
+
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            <header class="section-header"><h2>הסלטים שלנו</h2></header>
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('סלט כרוב מתוק')">
+              <h3 class="item">סלט כרוב מתוק</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט יווני')">
+              <h3 class="item">סלט יווני</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט מלפפונים וצנון')">
+              <h3 class="item">סלט מלפפונים וצנון</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט בריאות')">
+              <h3 class="item">סלט בריאות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט עדשים ובטטה')">
+              <h3 class="item">סלט עדשים ובטטה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט ניסואז')">
+              <h3 class="item">סלט ניסואז</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט עגבניות שרי')">
+              <h3 class="item">סלט עגבניות שרי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט פסטה')">
+              <h3 class="item">סלט פסטה</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('סלט קפרזה')">
+              <h3 class="item">סלט קפרזה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט קיסר')">
+              <h3 class="item">סלט קיסר</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט כרוב אסיאתי')">
+              <h3 class="item">סלט כרוב אסיאתי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט סלק מתוק')">
+              <h3 class="item">סלט סלק מתוק</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פלטת ירקות')">
+              <h3 class="item">פלטת ירקות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט אסיאתי')">
+              <h3 class="item">סלט אסיאתי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש בוראטה')">
+              <h3 class="item">מגש בוראטה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט עשבים וחמוציות')">
+              <h3 class="item">סלט עשבים וחמוציות</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('סלט קולורבי')">
+              <h3 class="item">סלט קולורבי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סלט סביח')">
+              <h3 class="item">סלט סביח</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            <header class="section-header"><h2>מגשי אירוח קרים</h2></header>
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('קוראסון מלוח / סלמון')">
+              <h3 class="item">קוראסון מלוח / סלמון</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('כריכוני ביס')">
+              <h3 class="item">כריכוני ביס</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('טורטיה')">
+              <h3 class="item">טורטיה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('לחמניות שום עננים')">
+              <h3 class="item">לחמניות שום עננים</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('בייגל ירושלמי')">
+              <h3 class="item">בייגל ירושלמי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('אנטיפסטי')">
+              <h3 class="item">אנטיפסטי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קציצות ירק')">
+              <h3 class="item">קציצות ירק</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מאפי פילו אישיים')">
+              <h3 class="item">מאפי פילו אישיים</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('לביבות בטטה')">
+              <h3 class="item">לביבות בטטה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פריקסה')">
+              <h3 class="item">פריקסה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קרפצ'יו סלק')">
+              <h3 class="item">קרפצ'יו סלק</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פחזניות מלוחות')">
+              <h3 class="item">פחזניות מלוחות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מיני פיתה סביח')">
+              <h3 class="item">מיני פיתה סביח</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('לחמניות חמאה וזעתר')">
+              <h3 class="item">לחמניות חמאה וזעתר</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מאפינס גבינות')">
+              <h3 class="item">מאפינס גבינות</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            <header class="section-header"><h2>מגשי אירוח חמים</h2></header>
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('לזניה גבינות')">
+              <h3 class="item">לזניה גבינות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('תפוח אדמה מוקרם')">
+              <h3 class="item">תפוח אדמה מוקרם</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קיש משפחתי (קוטר 24)')">
+              <h3 class="item">קיש משפחתי (קוטר 24)</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קישים אישיים (35 יח')')">
+              <h3 class="item">קישים אישיים (35 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פשטידת ירקות')">
+              <h3 class="item">פשטידת ירקות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פסטה קרם קשיו')">
+              <h3 class="item">פסטה קרם קשיו</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פסטה שום קונפי')">
+              <h3 class="item">פסטה שום קונפי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('רביולי גבינות')">
+              <h3 class="item">רביולי גבינות</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('פסטה רוזה')">
+              <h3 class="item">פסטה רוזה</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פסטה עגבניות')">
+              <h3 class="item">פסטה עגבניות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פסטה אלפרדו פטריות')">
+              <h3 class="item">פסטה אלפרדו פטריות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קנלוני גבינות')">
+              <h3 class="item">קנלוני גבינות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('ניוקי בעבודת יד')">
+              <h3 class="item">ניוקי בעבודת יד</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קנלוני בטטה ברוטב שמנת')">
+              <h3 class="item">קנלוני בטטה ברוטב שמנת</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פסטה פסטו')">
+              <h3 class="item">פסטה פסטו</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פוקאצ'ות פיצה אישיות (24 יח')')">
+              <h3 class="item">פוקאצ'ות פיצה אישיות (24 יח')</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('פוקאצ'ות ירק אישיות (24 יח')')">
+              <h3 class="item">פוקאצ'ות ירק אישיות (24 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('שקשוקות אישיות (12 יח')')">
+              <h3 class="item">שקשוקות אישיות (12 יח')</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            <header class="section-header"><h2>קינוחים</h2></header>
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('מלבי (20 יח')')">
+              <h3 class="item">מלבי (20 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פבלובות (12 יח')')">
+              <h3 class="item">פבלובות (12 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('כוסות מוס (20 יח')')">
+              <h3 class="item">כוסות מוס (20 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פאי פטיסייר (20 יח')')">
+              <h3 class="item">פאי פטיסייר (20 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש מגולגלות')">
+              <h3 class="item">מגש מגולגלות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('בראוניז שוקולד פאדג'')">
+              <h3 class="item">בראוניז שוקולד פאדג'</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פאי לימון')">
+              <h3 class="item">פאי לימון</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פאי פקאן')">
+              <h3 class="item">פאי פקאן</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('עוגת גבינה אפויה (קוטר 20)')">
+              <h3 class="item">עוגת גבינה אפויה (קוטר 20)</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('עוגת גבינה ניו יורק (קוטר 20)')">
+              <h3 class="item">עוגת גבינה ניו יורק (קוטר 20)</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('עוגת טירמיסו איטלקי')">
+              <h3 class="item">עוגת טירמיסו איטלקי</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('סושי פירות')">
+              <h3 class="item">סושי פירות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פחזניות (20 יח')')">
+              <h3 class="item">פחזניות (20 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('קרם ברולה (18/9 יח')')">
+              <h3 class="item">קרם ברולה (18/9 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('פטיפורים אישיים (35 יח')')">
+              <h3 class="item">פטיפורים אישיים (35 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש פירות')">
+              <h3 class="item">מגש פירות</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="page">
+          <div class="page-inner">
+            <div class="brand small">בס״ד</div>
+            
+            <div class="grid">
+              
+            <article class="card" onclick="openModal('פחזניות קראמבל (15 יח')')">
+              <h3 class="item">פחזניות קראמבל (15 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('גלילות בצק עלים (16 יח')')">
+              <h3 class="item">גלילות בצק עלים (16 יח')</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש עוגות שמרים')">
+              <h3 class="item">מגש עוגות שמרים</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש מיקס עוגות שמרים')">
+              <h3 class="item">מגש מיקס עוגות שמרים</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש עוגות בחושות')">
+              <h3 class="item">מגש עוגות בחושות</h3>
+            </article>
+            
+            <article class="card" onclick="openModal('מגש מיקס עוגות בחושות')">
+              <h3 class="item">מגש מיקס עוגות בחושות</h3>
+            </article>
+            
+            </div>
+          </div>
+        </section>
+        
+  </main>
+  
+<div id="menuModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2 id="modalName"></h2>
+    <img id="modalImg" src="" alt="" style="max-width:100%; border-radius:12px; margin:10px 0;">
+    <p id="modalDesc"></p>
+    <div id="modalPrice" style="font-weight:800; margin-top:8px;"></div>
+  </div>
+</div>
+<script>
+const data = [{"name": "סלט כרוב מתוק", "desc": "כרוב, חמוציות, אפרסמון/שזיף, קשיו קלוי/פקאן מתוק, כוסברה", "price": "149₪", "img": "https://via.placeholder.com/400x250?text=סלט+כרוב+מתוק"}, {"name": "סלט יווני", "desc": "חסה, אדממה, כרוב סגול, עגבניות שרי, תירס, אגוזי לוז/קשיו, ברוטב משגע", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+יווני"}, {"name": "סלט מלפפונים וצנון", "desc": "שלושה סוגי גמבות, מלפפונים, צנון ושמיר", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+מלפפונים+וצנון"}, {"name": "סלט בריאות", "desc": "חסה, תירס, אדממה, כרוב סגול, עגבניות שרי, אגוזי לוז/קשיו, ברוטב משגע", "price": "149₪", "img": "https://via.placeholder.com/400x250?text=סלט+בריאות"}, {"name": "סלט עדשים ובטטה", "desc": "עדשים, בטטות, חמוציות, פטרוזיליה וסילאן", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+עדשים+ובטטה"}, {"name": "סלט ניסואז", "desc": "חסה, ביצים קשות, תפוחי אדמה, שעועית ירוקה, זיתים, בצל סגול, עגבניות שרי וטונה", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+ניסואז"}, {"name": "סלט עגבניות שרי", "desc": "עגבניות שרי במגוון צבעים ובזיליקום", "price": "149₪", "img": "https://via.placeholder.com/400x250?text=סלט+עגבניות+שרי"}, {"name": "סלט פסטה", "desc": "פסטה פוזילי, עגבניות מיובשות, זיתי קלמטה, עלי בייבי ובייבי מוצרלה", "price": "139₪", "img": "https://via.placeholder.com/400x250?text=סלט+פסטה"}, {"name": "סלט קפרזה", "desc": "עגבניות שרי, עלי בזיליקום ובייבי מוצרלה", "price": "159₪", "img": "https://via.placeholder.com/400x250?text=סלט+קפרזה"}, {"name": "סלט קיסר", "desc": "לבבות חסה, אנשובי, קרוטונים ופרמז'ן ברוטב קיסר", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+קיסר"}, {"name": "סלט כרוב אסיאתי", "desc": "כרוב לבן ופקאנים מקורמלים ברוטב סויה", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+כרוב+אסיאתי"}, {"name": "סלט סלק מתוק", "desc": "סלק, אגוזי מלך, פטרוזיליה וגבינה בולגרית ברוטב שום וסילאן", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+סלק+מתוק"}, {"name": "פלטת ירקות", "desc": "מגוון ירקות חתוכים, מוגש בליווי מטבל", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=פלטת+ירקות"}, {"name": "סלט אסיאתי", "desc": "גזר, מלפפון וקולורבי על מצע כרוב סגול ברוטב טריאקי מתקתק", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+אסיאתי"}, {"name": "מגש בוראטה", "desc": "עגבניות שרי, פטריות, בזיליקום, בוראטה מוצרלה וגבינת שמנת ברוטב בלסמי", "price": "159₪", "img": "https://via.placeholder.com/400x250?text=מגש+בוראטה"}, {"name": "סלט עשבים וחמוציות", "desc": "עשבים, שקדים קלויים, פקאנים וחמוציות", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+עשבים+וחמוציות"}, {"name": "סלט קולורבי", "desc": "מיקס חסות, עלי רוקט, קולורבי, שקדים פרוסים וגבינת פטה ברוטב קרמי", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=סלט+קולורבי"}, {"name": "סלט סביח", "desc": "עלי בייבי, עגבניות שרי, מלפפון חמוץ, גרגירי חומוס, חצילים, ביצה קשה, פטרוזיליה וטחינה", "price": "159₪", "img": "https://via.placeholder.com/400x250?text=סלט+סביח"}, {"name": "קוראסון מלוח / סלמון", "desc": "מיקס גבינות/ירקות | גרסת סלמון: גבינת שמנת, עירית, סלמון מעושן (15 יח')", "price": "179₪ / 225₪", "img": "https://via.placeholder.com/400x250?text=קוראסון+מלוח+/+סלמון"}, {"name": "כריכוני ביס", "desc": "מבחר: סביח / טונה / ביצים / תפוחי אדמה / חביתה-גבינת שמנת-ירקות / פסטו-בולגרית-פלפל קלוי-חסה-מלפפון (15 יח')", "price": "169₪", "img": "https://via.placeholder.com/400x250?text=כריכוני+ביס"}, {"name": "טורטיה", "desc": "חצאי טורטיות במגוון מילויים: סביח / טונה / ביצים / חביתה-גבינת שמנת וירקות / אנטיפסטי-פסטו-בולגרית (24 חצאים)", "price": "169₪", "img": "https://via.placeholder.com/400x250?text=טורטיה"}, {"name": "לחמניות שום עננים", "desc": "לחמניות רכות ונימוחות בתיבול שום, עשבים ושמן זית (15 יח')", "price": "120₪", "img": "https://via.placeholder.com/400x250?text=לחמניות+שום+עננים"}, {"name": "בייגל ירושלמי", "desc": "בציפוי שומשום (20 יח')", "price": "130₪", "img": "https://via.placeholder.com/400x250?text=בייגל+ירושלמי"}, {"name": "אנטיפסטי", "desc": "מגוון ירקות העונה קלויים בתנור", "price": "139₪", "img": "https://via.placeholder.com/400x250?text=אנטיפסטי"}, {"name": "קציצות ירק", "desc": "קישוא, גזר, תפוח אדמה ובצל, מוגש בליווי מטבל", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=קציצות+ירק"}, {"name": "מאפי פילו אישיים", "desc": "מאפי פילו במילוי גבינות (15 יח')", "price": "165₪", "img": "https://via.placeholder.com/400x250?text=מאפי+פילו+אישיים"}, {"name": "לביבות בטטה", "desc": "מוגש בליווי מטבל", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=לביבות+בטטה"}, {"name": "פריקסה", "desc": "פריקסה טוניסאי: עריסה, לימון כבוש, טונה, תפוחי אדמה, ביצה קשה וירקות (15 יח')", "price": "225₪", "img": "https://via.placeholder.com/400x250?text=פריקסה"}, {"name": "קרפצ'יו סלק", "desc": "חומץ בלסמי, פקאן טבעי, גבינה בולגרית ועלי רוקט", "price": "109₪", "img": "https://via.placeholder.com/400x250?text=קרפצ'יו+סלק"}, {"name": "פחזניות מלוחות", "desc": "מילוי קרם גבינת שמנת וסלמון מעושן (15 יח')", "price": "179₪", "img": "https://via.placeholder.com/400x250?text=פחזניות+מלוחות"}, {"name": "מיני פיתה סביח", "desc": "מיני פיתות/פרנה במילוי חומוס, חציל, ביצה קשה ומלפפון חמוץ (15 יח')", "price": "169₪", "img": "https://via.placeholder.com/400x250?text=מיני+פיתה+סביח"}, {"name": "לחמניות חמאה וזעתר", "desc": "לחמניות חמאה רכות בתיבול זעתר (15 יח')", "price": "120₪", "img": "https://via.placeholder.com/400x250?text=לחמניות+חמאה+וזעתר"}, {"name": "מאפינס גבינות", "desc": "תוספות: זיתים / בצל / תירס (15 יח')", "price": "120₪", "img": "https://via.placeholder.com/400x250?text=מאפינס+גבינות"}, {"name": "לזניה גבינות", "desc": "ברוטב עגבניות וגבינות", "price": "179₪", "img": "https://via.placeholder.com/400x250?text=לזניה+גבינות"}, {"name": "תפוח אדמה מוקרם", "desc": "ברוטב שמנת ופטריות", "price": "179₪", "img": "https://via.placeholder.com/400x250?text=תפוח+אדמה+מוקרם"}, {"name": "קיש משפחתי (קוטר 24)", "desc": "טעמים: ברוקולי / פטריות / בטטה / בצל", "price": "135₪", "img": "https://via.placeholder.com/400x250?text=קיש+משפחתי+(קוטר+24)"}, {"name": "קישים אישיים (35 יח')", "desc": "מיקס: ברוקולי, פטריות, בטטה ובצל", "price": "249₪", "img": "https://via.placeholder.com/400x250?text=קישים+אישיים+(35+יח')"}, {"name": "פשטידת ירקות", "desc": "פטריות / קישואים / תפוחי אדמה / כרובית / ברוקולי", "price": "120₪", "img": "https://via.placeholder.com/400x250?text=פשטידת+ירקות"}, {"name": "פסטה קרם קשיו", "desc": "שמנת, תרד, בזיליקום וקשיו", "price": "160₪", "img": "https://via.placeholder.com/400x250?text=פסטה+קרם+קשיו"}, {"name": "פסטה שום קונפי", "desc": "שמנת, שום קונפי, טימין ופרמז'ן", "price": "160₪", "img": "https://via.placeholder.com/400x250?text=פסטה+שום+קונפי"}, {"name": "רביולי גבינות", "desc": "ברוטב שמנת ויין לבן", "price": "219₪", "img": "https://via.placeholder.com/400x250?text=רביולי+גבינות"}, {"name": "פסטה רוזה", "desc": "שמנת ועגבניות", "price": "139₪", "img": "https://via.placeholder.com/400x250?text=פסטה+רוזה"}, {"name": "פסטה עגבניות", "desc": "עגבניות ובזיליקום", "price": "119₪", "img": "https://via.placeholder.com/400x250?text=פסטה+עגבניות"}, {"name": "פסטה אלפרדו פטריות", "desc": "שמנת ופטריות", "price": "160₪", "img": "https://via.placeholder.com/400x250?text=פסטה+אלפרדו+פטריות"}, {"name": "קנלוני גבינות", "desc": "ברוטב רוזה מוקרם במוצרלה", "price": "189₪", "img": "https://via.placeholder.com/400x250?text=קנלוני+גבינות"}, {"name": "ניוקי בעבודת יד", "desc": "ברוטב שמנת ובטטה, בזיליקום", "price": "179₪", "img": "https://via.placeholder.com/400x250?text=ניוקי+בעבודת+יד"}, {"name": "קנלוני בטטה ברוטב שמנת", "desc": "קרם בטטה, גבינות ובזיליקום", "price": "179₪", "img": "https://via.placeholder.com/400x250?text=קנלוני+בטטה+ברוטב+שמנת"}, {"name": "פסטה פסטו", "desc": "ברוטב פסטו", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=פסטה+פסטו"}, {"name": "פוקאצ'ות פיצה אישיות (24 יח')", "desc": "רוטב פיצה, מוצרלה וזיתים/תירס", "price": "169₪", "img": "https://via.placeholder.com/400x250?text=פוקאצ'ות+פיצה+אישיות+(24+יח')"}, {"name": "פוקאצ'ות ירק אישיות (24 יח')", "desc": "תוספות שונות", "price": "169₪", "img": "https://via.placeholder.com/400x250?text=פוקאצ'ות+ירק+אישיות+(24+יח')"}, {"name": "שקשוקות אישיות (12 יח')", "desc": "ביצים ברוטב עגבניות", "price": "159₪", "img": "https://via.placeholder.com/400x250?text=שקשוקות+אישיות+(12+יח')"}, {"name": "מלבי (20 יח')", "desc": "בוטנים מסוכרים, קוקוס וסירופ מלבי", "price": "250₪", "img": "https://via.placeholder.com/400x250?text=מלבי+(20+יח')"}, {"name": "פבלובות (12 יח')", "desc": "קצפת ופירות יער/תותים", "price": "240₪", "img": "https://via.placeholder.com/400x250?text=פבלובות+(12+יח')"}, {"name": "כוסות מוס (20 יח')", "desc": "מגוון טעמים", "price": "240₪", "img": "https://via.placeholder.com/400x250?text=כוסות+מוס+(20+יח')"}, {"name": "פאי פטיסייר (20 יח')", "desc": "קרם פטיסייר, קראמבל ופירות העונה", "price": "240₪", "img": "https://via.placeholder.com/400x250?text=פאי+פטיסייר+(20+יח')"}, {"name": "מגש מגולגלות", "desc": "מיקס מגולגלות", "price": "180₪", "img": "https://via.placeholder.com/400x250?text=מגש+מגולגלות"}, {"name": "בראוניז שוקולד פאדג'", "desc": "בראוניז שוקולד נימוח", "price": "180₪", "img": "https://via.placeholder.com/400x250?text=בראוניז+שוקולד+פאדג'"}, {"name": "פאי לימון", "desc": "בצק פריך, לימון ומרנג", "price": "210₪", "img": "https://via.placeholder.com/400x250?text=פאי+לימון"}, {"name": "פאי פקאן", "desc": "בצק פריך, פקאן ומייפל", "price": "180₪", "img": "https://via.placeholder.com/400x250?text=פאי+פקאן"}, {"name": "עוגת גבינה אפויה (קוטר 20)", "desc": "קרם שמנת ותותים/דובדבנים", "price": "220₪", "img": "https://via.placeholder.com/400x250?text=עוגת+גבינה+אפויה+(קוטר+20)"}, {"name": "עוגת גבינה ניו יורק (קוטר 20)", "desc": "תחתית ביסקוויטים, ציפוי שמנת", "price": "300₪", "img": "https://via.placeholder.com/400x250?text=עוגת+גבינה+ניו+יורק+(קוטר+20)"}, {"name": "עוגת טירמיסו איטלקי", "desc": "בישקוטים, אספרסו, קרם מסקרפונה עשיר", "price": "250₪", "img": "https://via.placeholder.com/400x250?text=עוגת+טירמיסו+איטלקי"}, {"name": "סושי פירות", "desc": "מארז מסיבה", "price": "250₪", "img": "https://via.placeholder.com/400x250?text=סושי+פירות"}, {"name": "פחזניות (20 יח')", "desc": "קרם וניל עשיר", "price": "160₪", "img": "https://via.placeholder.com/400x250?text=פחזניות+(20+יח')"}, {"name": "קרם ברולה (18/9 יח')", "desc": "אישי בציפוי סוכר מקורמל", "price": "135₪ / 77₪", "img": "https://via.placeholder.com/400x250?text=קרם+ברולה+(18/9+יח')"}, {"name": "פטיפורים אישיים (35 יח')", "desc": "פקאן וקרמל / גנאש שוקולד / לימון ומרנג", "price": "210₪", "img": "https://via.placeholder.com/400x250?text=פטיפורים+אישיים+(35+יח')"}, {"name": "מגש פירות", "desc": "בהתאם לעונה", "price": "250₪", "img": "https://via.placeholder.com/400x250?text=מגש+פירות"}, {"name": "פחזניות קראמבל (15 יח')", "desc": "קרם וניל עשיר", "price": "—", "img": "https://via.placeholder.com/400x250?text=פחזניות+קראמבל+(15+יח')"}, {"name": "גלילות בצק עלים (16 יח')", "desc": "קרם וניל עשיר", "price": "240₪", "img": "https://via.placeholder.com/400x250?text=גלילות+בצק+עלים+(16+יח')"}, {"name": "מגש עוגות שמרים", "desc": "—", "price": "159₪", "img": "https://via.placeholder.com/400x250?text=מגש+עוגות+שמרים"}, {"name": "מגש מיקס עוגות שמרים", "desc": "בטעמים שונים", "price": "—", "img": "https://via.placeholder.com/400x250?text=מגש+מיקס+עוגות+שמרים"}, {"name": "מגש עוגות בחושות", "desc": "—", "price": "129₪", "img": "https://via.placeholder.com/400x250?text=מגש+עוגות+בחושות"}, {"name": "מגש מיקס עוגות בחושות", "desc": "בטעמים שונים", "price": "—", "img": "https://via.placeholder.com/400x250?text=מגש+מיקס+עוגות+בחושות"}];
+function openModal(name){
+  const item = data.find(d => d.name === name);
+  if(!item) return;
+  document.getElementById('modalName').textContent = item.name;
+  document.getElementById('modalDesc').textContent = item.desc;
+  document.getElementById('modalPrice').textContent = item.price && item.price !== '—' ? item.price : '';
+  document.getElementById('modalImg').src = item.img;
+  document.getElementById('menuModal').style.display = 'block';
+}
+function closeModal(){
+  document.getElementById('menuModal').style.display = 'none';
+}
+window.onclick = function(event) {
+  if (event.target == document.getElementById('menuModal')) {
+    closeModal();
+  }
+}
+</script>
+
+</body>
+</html>
